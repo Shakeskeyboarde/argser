@@ -4,29 +4,32 @@ A miniscule arguments parser written in Typescript.
 
 ## Getting Started
 
-The package only exports a single function. This function accepts a map of expected option definitions.
+The package exports a single function. It accepts an args array and a map of option definitions. It returns a map of values parsed from the args array.
 
 ```ts
 import argser from 'argser';
 
 const args = ['--flag', '--string=foo', '--integer', '123', '--example=1', '-e', '2'];
-const result = argser(args, {
+const [options, err] = argser(args, {
   // A flag (--flag or -f), accepting no value.
   flag: { alias: 'f' },
+
   // A string option (--string), accepting one value.
   string: { value: true },
+
   // An integer option (--integer), parsed using `parseInt`.
   integer: { value: parseInt },
+
   // An integer option (--example or -e), parsed using `parseInt`,
   // repeatable to add values to the result array.
   example: { alias: 'e', value: parseInt, many: true },
 });
 ```
 
-The `typeof result` would be...
+The `typeof options` would be...
 
 ```ts
-type Result = {
+type Options = {
   flag: boolean;
   string: string | undefined;
   integer: number | undefined;
@@ -35,7 +38,7 @@ type Result = {
 };
 ```
 
-The result value would be...
+The `options` value would be...
 
 ```ts
 {
@@ -69,7 +72,7 @@ argser(process.argv.slice(2), {
 });
 ```
 
-You can also just omit the first argument, in which case the default arguments array is `process.argv.slice(2)`.
+Alternatively, omit the arguments array, in which case the default arguments array is `process.argv.slice(2)`.
 
 ```ts
 argser({
@@ -79,10 +82,12 @@ argser({
 
 ## Errors
 
-Errors will be thrown in the following cases.
+An error will be _returned_ in the following cases.
 
 - An undefined option is encountered.
 - No value is present for an option which expects a value.
+
+Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and an `reason` properties to support custom messaging.
 
 ## Help/Usage Text
 

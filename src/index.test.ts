@@ -7,13 +7,16 @@ it('should not use values for flags', () => {
       b: false,
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [
-        "2",
-      ],
-      "a": true,
-      "b": true,
-    }
+    Array [
+      Object {
+        "_": Array [
+          "2",
+        ],
+        "a": true,
+        "b": true,
+      },
+      null,
+    ]
   `);
 });
 
@@ -24,11 +27,14 @@ it('should use values for options', () => {
       b: true,
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [],
-      "a": "1",
-      "b": "2",
-    }
+    Array [
+      Object {
+        "_": Array [],
+        "a": "1",
+        "b": "2",
+      },
+      null,
+    ]
   `);
 });
 
@@ -39,11 +45,14 @@ it('should parse values when given a "value" function', () => {
       b: parseInt,
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [],
-      "a": 1,
-      "b": 2,
-    }
+    Array [
+      Object {
+        "_": Array [],
+        "a": 1,
+        "b": 2,
+      },
+      null,
+    ]
   `);
 });
 
@@ -53,13 +62,16 @@ it('should output an array of values for "many" options', () => {
       a: { value: parseInt, many: true, alias: 'b' },
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [],
-      "a": Array [
-        1,
-        2,
-      ],
-    }
+    Array [
+      Object {
+        "_": Array [],
+        "a": Array [
+          1,
+          2,
+        ],
+      },
+      null,
+    ]
   `);
 });
 
@@ -71,21 +83,35 @@ it('should use process.argv.slice(2) when no arguments array is given', () => {
       b: true,
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [],
-      "a": "1",
-      "b": "2",
-    }
+    Array [
+      Object {
+        "_": Array [],
+        "a": "1",
+        "b": "2",
+      },
+      null,
+    ]
   `);
 });
 
-it('should throw an error when an unknown option is used', () => {
-  expect(() => {
+it('should return an error when an unknown option is used', () => {
+  expect(
     argser(['-c'], {
       a: true,
       b: true,
-    });
-  }).toThrow();
+    }),
+  ).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "_": Array [
+          "-c",
+        ],
+        "a": undefined,
+        "b": undefined,
+      },
+      [Error: Argument "-c" is unknown.],
+    ]
+  `);
 });
 
 it('should stop parsing options when -- is encountered', () => {
@@ -95,14 +121,17 @@ it('should stop parsing options when -- is encountered', () => {
       b: true,
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [
-        "-b",
-        "2",
-      ],
-      "a": "1",
-      "b": undefined,
-    }
+    Array [
+      Object {
+        "_": Array [
+          "-b",
+          "2",
+        ],
+        "a": "1",
+        "b": undefined,
+      },
+      null,
+    ]
   `);
 });
 
@@ -113,13 +142,16 @@ it('should treat an empty option definition ({}) as a flag', () => {
       b: {},
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [
-        "2",
-      ],
-      "a": true,
-      "b": true,
-    }
+    Array [
+      Object {
+        "_": Array [
+          "2",
+        ],
+        "a": true,
+        "b": true,
+      },
+      null,
+    ]
   `);
 });
 
@@ -131,20 +163,33 @@ it('should ignore a definition for underscore (_)', () => {
       _: false,
     }),
   ).toMatchInlineSnapshot(`
-    Object {
-      "_": Array [
-        "2",
-      ],
-      "a": true,
-      "b": true,
-    }
+    Array [
+      Object {
+        "_": Array [
+          "2",
+        ],
+        "a": true,
+        "b": true,
+      },
+      null,
+    ]
   `);
 });
 
-it('should throw an error if an option is missing its value', () => {
-  expect(() => {
+it('should return an error if an option is missing its value', () => {
+  expect(
     argser(['-a'], {
       a: true,
-    });
-  }).toThrow();
+    }),
+  ).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "_": Array [
+          "-a",
+        ],
+        "a": undefined,
+      },
+      [Error: Argument "-a" requires a value.],
+    ]
+  `);
 });

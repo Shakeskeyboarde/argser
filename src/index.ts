@@ -1,11 +1,15 @@
-export type Definitions = Record<
-  string,
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { ArgserError } from './ArgserError';
+
+export type Definition =
   | boolean
   | ((value: string) => unknown)
-  | { alias?: string; value?: true | false | ((value: string) => unknown); many?: boolean }
->;
+  | { alias?: string; value?: true | false | ((value: string) => unknown); many?: boolean };
 
-export type Result<TDefs> = TDefs extends Definitions
+export type Definitions = Record<string, Definition>;
+
+export type InferOptions<TDefs extends Definitions> = TDefs extends Definitions
   ? {
       _: string[];
     } & {
@@ -27,23 +31,25 @@ export type Result<TDefs> = TDefs extends Definitions
     }
   : never;
 
-export default function argser<TDefs extends Definitions>(options: TDefs): Result<TDefs>;
-export default function argser<TDefs extends Definitions>(args: string[], options: TDefs): Result<TDefs>;
-export default function argser<TDefs extends Definitions>(...params: [TDefs] | [string[], TDefs]): Result<TDefs> {
-  const [args, options] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
-  const result: Record<string, unknown> = { _: [] };
+export type Result<TDefs extends Definitions> = [InferOptions<TDefs>, Error | null];
+
+export default function argser<TDefs extends Definitions>(definitions: TDefs): Result<TDefs>;
+export default function argser<TDefs extends Definitions>(args: string[], definitions: TDefs): Result<TDefs>;
+export default function argser<TDefs extends Definitions>(...params: [TDefs] | [string[], TDefs]): Record<string, any> {
+  const [args, definitions] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
+  const options: Record<string, any> = { _: [] };
   const names = new Map<string, string>();
   const parsers = new Map<string, (value: string) => unknown>();
   const arrays = new Set<string>();
 
-  Object.entries(options).forEach(([name, spec]) => {
+  Object.entries(definitions).forEach(([name, spec]) => {
     if (name === '_') {
       return;
     }
 
     const { alias = undefined, value = false, many = false } = typeof spec === 'object' ? spec : { value: spec };
 
-    result[name] = many ? [] : value ? undefined : false;
+    options[name] = many ? [] : value ? undefined : false;
     names.set(name, name);
     if (alias && alias !== '_') names.set(alias, name);
     if (value) parsers.set(name, value === true ? (v) => v : value);
@@ -60,14 +66,15 @@ export default function argser<TDefs extends Definitions>(...params: [TDefs] | [
     const match = arg.match(/^-+(.+?)(?:=(.*))?$/)?.slice(1) as null | [string, string?];
 
     if (!match) {
-      (result._ as unknown[]).push(arg);
+      options._.push(arg);
       continue;
     }
 
     const name = names.get(match[0]);
 
     if (name == null) {
-      throw Error(`Unknown argument: ${arg}`);
+      options._.push(arg, ...args);
+      return [options, new ArgserError(arg, 'unknown')];
     }
 
     const parser = parsers.get(name);
@@ -77,7 +84,8 @@ export default function argser<TDefs extends Definitions>(...params: [TDefs] | [
       const string = match[1] ?? args.shift();
 
       if (string == null) {
-        throw Error(`Value required for argument: ${arg}`);
+        options._.push(arg, ...args);
+        return [options, new ArgserError(arg, 'incomplete')];
       }
 
       value = parser(string);
@@ -86,13 +94,12 @@ export default function argser<TDefs extends Definitions>(...params: [TDefs] | [
     }
 
     if (arrays.has(name)) {
-      (result[name] as unknown[]).push(value);
+      options[name].push(value);
     } else {
-      result[name] = value;
+      options[name] = value;
     }
   }
 
-  result._ = [...(result._ as unknown[]), ...args];
-
-  return result as Result<TDefs>;
+  options._.push(...args);
+  return [options, null];
 }
