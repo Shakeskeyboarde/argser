@@ -1,11 +1,11 @@
 {
-  "name": "nanoargs",
+  "name": "argser",
   "version": "1.0.0",
-  "license": "ISC",
+  "license": "Unlicense",
   "author": "Chris Ackerman",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Shakeskeyboarde/nanoargs.git"
+    "url": "https://github.com/Shakeskeyboarde/argser.git"
   },
   "types": "./lib/index.d.ts",
   "main": "./lib/index.js",

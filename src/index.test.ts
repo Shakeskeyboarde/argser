@@ -1,8 +1,8 @@
-import nanoargs from '.';
+import argser from '.';
 
 it('should not use values for flags', () => {
   expect(
-    nanoargs(['-a=1', '-b', '2'], {
+    argser(['-a=1', '-b', '2'], {
       a: false,
       b: false,
     }),
@@ -19,7 +19,7 @@ it('should not use values for flags', () => {
 
 it('should use values for options', () => {
   expect(
-    nanoargs(['-a=1', '-b', '2'], {
+    argser(['-a=1', '-b', '2'], {
       a: true,
       b: true,
     }),
@@ -34,7 +34,7 @@ it('should use values for options', () => {
 
 it('should parse values when given a "value" function', () => {
   expect(
-    nanoargs(['-a=1', '-b', '2'], {
+    argser(['-a=1', '-b', '2'], {
       a: parseInt,
       b: parseInt,
     }),
@@ -49,7 +49,7 @@ it('should parse values when given a "value" function', () => {
 
 it('should output an array of values for "many" options', () => {
   expect(
-    nanoargs(['-a=1', '-b', '2'], {
+    argser(['-a=1', '-b', '2'], {
       a: { value: parseInt, many: true, alias: 'b' },
     }),
   ).toMatchInlineSnapshot(`
@@ -66,7 +66,7 @@ it('should output an array of values for "many" options', () => {
 it('should use process.argv.slice(2) when no arguments array is given', () => {
   process.argv = [...process.argv.slice(0, 2), '-a=1', '-b', '2'];
   expect(
-    nanoargs({
+    argser({
       a: true,
       b: true,
     }),
@@ -81,7 +81,7 @@ it('should use process.argv.slice(2) when no arguments array is given', () => {
 
 it('should throw an error when an unknown option is used', () => {
   expect(() => {
-    nanoargs(['-c'], {
+    argser(['-c'], {
       a: true,
       b: true,
     });
@@ -90,7 +90,7 @@ it('should throw an error when an unknown option is used', () => {
 
 it('should stop parsing options when -- is encountered', () => {
   expect(
-    nanoargs(['-a=1', '--', '-b', '2'], {
+    argser(['-a=1', '--', '-b', '2'], {
       a: true,
       b: true,
     }),
@@ -108,7 +108,7 @@ it('should stop parsing options when -- is encountered', () => {
 
 it('should treat an empty option definition ({}) as a flag', () => {
   expect(
-    nanoargs(['-a=1', '-b', '2'], {
+    argser(['-a=1', '-b', '2'], {
       a: {},
       b: {},
     }),
@@ -125,7 +125,7 @@ it('should treat an empty option definition ({}) as a flag', () => {
 
 it('should ignore a definition for underscore (_)', () => {
   expect(
-    nanoargs(['-a=1', '-b', '2'], {
+    argser(['-a=1', '-b', '2'], {
       a: false,
       b: false,
       _: false,
@@ -143,7 +143,7 @@ it('should ignore a definition for underscore (_)', () => {
 
 it('should throw an error if an option is missing its value', () => {
   expect(() => {
-    nanoargs(['-a'], {
+    argser(['-a'], {
       a: true,
     });
   }).toThrow();

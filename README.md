@@ -1,16 +1,16 @@
-# nanoargs
+# Argser (arg-parser)
 
-Miniscule args parser written in Typescript.
+A miniscule arguments parser written in Typescript.
 
 ## Getting Started
 
 The package only exports a single function. This function accepts a map of expected option definitions.
 
 ```ts
-import nanoargs from 'nanoargs';
+import argser from 'argser';
 
 const args = ['--flag', '--string=foo', '--integer', '123', '--example=1', '-e', '2'];
-const result = nanoargs(args, {
+const result = argser(args, {
   // A flag (--flag or -f), accepting no value.
   flag: { alias: 'f' },
   // A string option (--string), accepting one value.
@@ -19,7 +19,7 @@ const result = nanoargs(args, {
   integer: { value: parseInt },
   // An integer option (--example or -e), parsed using `parseInt`,
   // repeatable to add values to the result array.
-  example: { alias: 'e', value: parseInt, many: true }
+  example: { alias: 'e', value: parseInt, many: true },
 });
 ```
 
@@ -52,10 +52,10 @@ The result value would be...
 For options with only a `value` definition, you can shorten the definition to just the value of the `value` definition.
 
 ```ts
-nanoargs({
+argser({
   flag: false, // Same as {} or { value: false }
   string: true, // Same as { value: true }
-  integer: parseInt // Same as { value: parseInt }
+  integer: parseInt, // Same as { value: parseInt }
 });
 ```
 
@@ -64,7 +64,7 @@ nanoargs({
 When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two non-argument values.
 
 ```ts
-nanoargs(process.argv.slice(2), {
+argser(process.argv.slice(2), {
   // Option definitions...
 });
 ```
@@ -72,9 +72,9 @@ nanoargs(process.argv.slice(2), {
 You can also just omit the first argument, in which case the default arguments array is `process.argv.slice(2)`.
 
 ```ts
-nanoargs({
+argser({
   // Options definitions...
-})
+});
 ```
 
 ## Errors

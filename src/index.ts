@@ -1,43 +1,37 @@
-type NanoArgsOptions = Record<
+export type Definitions = Record<
   string,
   | boolean
   | ((value: string) => unknown)
   | { alias?: string; value?: true | false | ((value: string) => unknown); many?: boolean }
 >;
 
-type NanoArgsResult<TOptions> = TOptions extends NanoArgsOptions
+export type Result<TDefs> = TDefs extends Definitions
   ? {
       _: string[];
     } & {
-      [P in Exclude<keyof TOptions, '_'>]: TOptions[P] extends false | { many?: false; value?: false }
+      [P in Exclude<keyof TDefs, '_'>]: TDefs[P] extends false | { many?: false; value?: false }
         ? boolean
-        : TOptions[P] extends true | { many?: false; value: true }
+        : TDefs[P] extends true | { many?: false; value: true }
         ? string | undefined
-        : TOptions[P] extends (value: string) => infer TValue
+        : TDefs[P] extends (value: string) => infer TValue
         ? TValue | undefined
-        : TOptions[P] extends { many?: false; value: (value: string) => infer TValue }
+        : TDefs[P] extends { many?: false; value: (value: string) => infer TValue }
         ? TValue | undefined
-        : TOptions[P] extends { many: true; value?: false }
+        : TDefs[P] extends { many: true; value?: false }
         ? boolean[]
-        : TOptions[P] extends { many: true; value: true }
+        : TDefs[P] extends { many: true; value: true }
         ? string[]
-        : TOptions[P] extends { many: true; value: (value: string) => infer TValue }
+        : TDefs[P] extends { many: true; value: (value: string) => infer TValue }
         ? TValue[]
         : never;
     }
   : never;
 
-export default function nanoargs<TOptions extends NanoArgsOptions>(options: TOptions): NanoArgsResult<TOptions>;
-export default function nanoargs<TOptions extends NanoArgsOptions>(
-  args: string[],
-  options: TOptions,
-): NanoArgsResult<TOptions>;
-export default function nanoargs<TOptions extends NanoArgsOptions>(
-  ...params: [TOptions] | [string[], TOptions]
-): NanoArgsResult<TOptions> {
+export default function argser<TDefs extends Definitions>(options: TDefs): Result<TDefs>;
+export default function argser<TDefs extends Definitions>(args: string[], options: TDefs): Result<TDefs>;
+export default function argser<TDefs extends Definitions>(...params: [TDefs] | [string[], TDefs]): Result<TDefs> {
   const [args, options] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result: Record<string, any> = { _: [] as string[] };
+  const result: Record<string, unknown> = { _: [] };
   const names = new Map<string, string>();
   const parsers = new Map<string, (value: string) => unknown>();
   const arrays = new Set<string>();
@@ -66,7 +60,7 @@ export default function nanoargs<TOptions extends NanoArgsOptions>(
     const match = arg.match(/^-+(.+?)(?:=(.*))?$/)?.slice(1) as null | [string, string?];
 
     if (!match) {
-      result._.push(arg);
+      (result._ as unknown[]).push(arg);
       continue;
     }
 
@@ -92,13 +86,13 @@ export default function nanoargs<TOptions extends NanoArgsOptions>(
     }
 
     if (arrays.has(name)) {
-      result[name].push(value);
+      (result[name] as unknown[]).push(value);
     } else {
       result[name] = value;
     }
   }
 
-  result._ = [...result._, ...args];
+  result._ = [...(result._ as unknown[]), ...args];
 
-  return result as NanoArgsResult<TOptions>;
+  return result as Result<TDefs>;
 }
