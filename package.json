@@ -1,12 +1,26 @@
 {
   "name": "argser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "Unlicense",
   "author": "Chris Ackerman",
   "repository": {
     "type": "git",
     "url": "https://github.com/Shakeskeyboarde/argser.git"
   },
+  "keywords": [
+    "arg",
+    "args",
+    "argv",
+    "arguments",
+    "parse",
+    "parser",
+    "cli",
+    "flag",
+    "option",
+    "minimist",
+    "yargs",
+    "commander"
+  ],
   "types": "./lib/index.d.ts",
   "main": "./lib/index.js",
   "scripts": {
