@@ -77,6 +77,7 @@ Generating and printing help and usage text isn't an included feature. I recomme
 ```ts
 export default `
 Usage:  my-cli [options]
+        my-cli --version
         my-cli --help
 
 My cool CLI that does cool things.
