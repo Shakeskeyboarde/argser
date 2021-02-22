@@ -103,3 +103,17 @@ export default function argser<TDefs extends Definitions>(...params: [TDefs] | [
   options._.push(...args);
   return [options, null];
 }
+
+function command<TCommand extends string>(...commands: TCommand[]): [TCommand | undefined, string[]];
+function command<TCommand extends string>(args: string[], ...commands: TCommand[]): [TCommand | undefined, string[]];
+function command<TCommand extends string>(
+  ...params: [string[], ...string[]] | string[]
+): [TCommand | undefined, string[]] {
+  const [args, commands] = (params[0] instanceof Array
+    ? [params[0].slice(), params.slice(1)]
+    : [process.argv.slice(2), params]) as [string[], string[]];
+
+  return commands.indexOf(args[0]) >= 0 ? [args[0] as TCommand, args.slice(1)] : [undefined, args];
+}
+
+argser.command = command;

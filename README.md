@@ -4,7 +4,7 @@ A miniscule arguments parser written in Typescript.
 
 ## Getting Started
 
-The package exports a single function. It accepts an args array and a map of option definitions. It returns a map of values parsed from the args array.
+The default export `argser` function accepts an optional args array and a map of option definitions. It returns a map of values parsed from the args array.
 
 ```ts
 import argser from 'argser';
@@ -19,7 +19,7 @@ const [options, err] = argser(args, {
 });
 ```
 
-The `options` value would be...
+The above `options` value would be...
 
 ```ts
 {
@@ -31,7 +31,7 @@ The `options` value would be...
 }
 ```
 
-## Option Definition Shorthand
+### Option Definition Shorthand
 
 For options with only a `value` definition, you can shorten the definition to just the value of the `value` definition.
 
@@ -43,25 +43,7 @@ argser({
 });
 ```
 
-## Process Arguments
-
-When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two non-argument values.
-
-```ts
-argser(process.argv.slice(2), {
-  // Option definitions...
-});
-```
-
-Alternatively, omit the arguments array, in which case the default arguments array is `process.argv.slice(2)`.
-
-```ts
-argser({
-  // Options definitions...
-});
-```
-
-## Errors
+### Errors
 
 An error will be _returned_ in the following cases.
 
@@ -69,6 +51,44 @@ An error will be _returned_ in the following cases.
 - No value is present for an option which expects a value.
 
 Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and `reason` properties to support custom messaging.
+
+## Commands
+
+The `argser.command` function accepts an optional args array, and a variable number of command names. If the first arg matches one of the command names, it returns the matched command name, and an args array with the command removed.
+
+```ts
+import argser from 'argser';
+
+const args = ['foo', '--help'];
+
+const [command, commandArgs] = argser.command(args, 'foo');
+```
+
+The above `command` value would be `"foo"`, and the `commandArgs` value would be `["--help"]`.
+
+If no command is matched, `command` will be `undefined`, and `commandArgs` will include all of the original args.
+
+## Process Arguments
+
+When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two non-argument values.
+
+```ts
+argser(process.argv.slice(2), {
+  ...
+});
+
+argser.command(process.argv.slice(2), ...);
+```
+
+Alternatively, omit the arguments array, in which case the default arguments array is `process.argv.slice(2)`.
+
+```ts
+argser({
+  ...
+});
+
+argser.command(...);
+```
 
 ## Help/Usage Text
 
