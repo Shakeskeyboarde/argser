@@ -62,7 +62,7 @@ argser({
 });
 ```
 
-## Using Process Arguments
+## Process Arguments
 
 When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two non-argument values.
 
@@ -87,7 +87,7 @@ An error will be _returned_ in the following cases.
 - An undefined option is encountered.
 - No value is present for an option which expects a value.
 
-Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and an `reason` properties to support custom messaging.
+Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and `reason` properties to support custom messaging.
 
 ## Help/Usage Text
 
