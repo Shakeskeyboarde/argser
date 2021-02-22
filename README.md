@@ -10,43 +10,24 @@ The package exports a single function. It accepts an args array and a map of opt
 import argser from 'argser';
 
 const args = ['--flag', '--string=foo', '--integer', '123', '--example=1', '-e', '2'];
+
 const [options, err] = argser(args, {
-  // A flag (--flag or -f), accepting no value.
-  flag: { alias: 'f' },
-
-  // A string option (--string), accepting one value.
+  flag: { value: false },
   string: { value: true },
-
-  // An integer option (--integer), parsed using `parseInt`.
   integer: { value: parseInt },
-
-  // An integer option (--example or -e), parsed using `parseInt`,
-  // repeatable to add values to the result array.
-  example: { alias: 'e', value: parseInt, many: true },
+  example: { value: parseInt, alias: 'e', many: true },
 });
-```
-
-The `typeof options` would be...
-
-```ts
-type Options = {
-  flag: boolean;
-  string: string | undefined;
-  integer: number | undefined;
-  example: number[];
-  _: string[];
-};
 ```
 
 The `options` value would be...
 
 ```ts
 {
+  _: [],
   flag: true,
   string: 'foo',
   integer: 123,
   example: [1, 2],
-  _: []
 }
 ```
 
