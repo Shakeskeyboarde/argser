@@ -5,9 +5,10 @@ A miniscule arguments parser written in Typescript.
 - [Basic Usage](#basic-usage)
 - [Aliased Options](#aliased-options)
 - [Repeatable Options](#repeatable-options)
+- [Arguments Format](#arguments-format)
 - [Errors](#errors)
 - [Commands](#commands)
-- [Arguments Array](#arguments-array)
+- [Process Arguments](#process-arguments)
 - [Help Text](#help-text)
 
 ## Basic Usage
@@ -61,6 +62,28 @@ argser(process.argv.slice(2), {
 });
 ```
 
+## Arguments Format
+
+Any argument can start with any number of hyphens, and values can be space or equal (`=`) separated.
+
+The following argument arrays are all equivalent to this library:
+
+```ts
+['--arg=value']
+['--arg', 'value']
+['-arg=value']
+['-arg', 'value']
+['-----arg', 'value']
+```
+
+### Double Dash
+
+Argument parsing stops when a double dash (`--`) is encountered. Any arguments after a double dash will be added to the underscore (`_`) key of the options object.
+
+```ts
+['--flag', '--', '--underscore', '--values']
+```
+
 ## Errors
 
 An error will be _returned_ in the following cases.
@@ -82,7 +105,7 @@ The above `command` value would be `"foo"`, and the `commandArgs` value would be
 
 If no command is matched, then `command` would be `undefined`, and `commandArgs` would include _all_ of the original arguments.
 
-## Arguments Array
+## Process Arguments
 
 When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two _non-argument_ values.
 
