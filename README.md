@@ -1,4 +1,4 @@
-# Argser (arg-parser)
+# Argser (argument-parser)
 
 A miniscule arguments parser written in Typescript.
 
@@ -64,16 +64,16 @@ argser(process.argv.slice(2), {
 
 ## Arguments Format
 
-Any argument can start with any number of hyphens, and values can be space or equal (`=`) separated.
+Option name arguments can start with any number of hyphens, and option values can be space or equal (`=`) separated. Using single hyphens and space value separation for single character options, is _purely by convention_ and not enforced.
 
-The following argument arrays are all equivalent to this library:
+The following argument arrays are all equivalent:
 
 ```ts
-['--arg=value']
-['--arg', 'value']
-['-arg=value']
-['-arg', 'value']
-['-----arg', 'value']
+['--name=value']
+['--name', 'value']
+['-name=value']
+['-name', 'value']
+['-----name', 'value']
 ```
 
 ### Double Dash
@@ -81,7 +81,7 @@ The following argument arrays are all equivalent to this library:
 Argument parsing stops when a double dash (`--`) is encountered. Any arguments after a double dash will be added to the underscore (`_`) key of the options object.
 
 ```ts
-['--flag', '--', '--underscore', '--values']
+['--option', '--', '--underscore', '--values']
 ```
 
 ## Errors
@@ -95,7 +95,7 @@ Errors are returned instead of thrown to allow the partially parsed options obje
 
 ## Commands
 
-The `argser.command` function accepts an optional arguments array, and a variable number of command names. If the first arg matches one of the command names, it returns the matched command name, and an arguments array with the command removed.
+The `argser.command` function accepts an optional arguments array, and a variable number of command names. If the first argument matches one of the command names, it returns the matched command name, and an arguments array with the command removed.
 
 ```ts
 const [command, commandArgs] = argser.command(['foo', '--help'], 'foo');
