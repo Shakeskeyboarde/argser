@@ -24,7 +24,7 @@ const [options, err] = argser(['--flag', '--string=a', '--integer=1'], {
 });
 ```
 
-The returned `options` options map would be...
+The returned `options` object would be as follows:
 
 ```ts
 {
