@@ -35,7 +35,9 @@ export type Result<TDefs extends Definitions> = [InferOptions<TDefs>, Error | nu
 
 export default function argser<TDefs extends Definitions>(definitions: TDefs): Result<TDefs>;
 export default function argser<TDefs extends Definitions>(args: string[], definitions: TDefs): Result<TDefs>;
-export default function argser<TDefs extends Definitions>(...params: [TDefs] | [string[], TDefs]): Record<string, any> {
+export default function argser<TDefs extends Definitions>(
+  ...params: [TDefs] | [string[], TDefs]
+): [Record<string, any>, Error | null] {
   const [args, definitions] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
   const options: Record<string, any> = { _: [] };
   const names = new Map<string, string>();
@@ -101,6 +103,7 @@ export default function argser<TDefs extends Definitions>(...params: [TDefs] | [
   }
 
   options._.push(...args);
+
   return [options, null];
 }
 
