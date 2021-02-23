@@ -117,3 +117,4 @@ function command<TCommand extends string>(
 }
 
 argser.command = command;
+export { command };

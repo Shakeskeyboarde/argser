@@ -2,91 +2,99 @@
 
 A miniscule arguments parser written in Typescript.
 
-## Getting Started
+- [Basic Usage](#basic-usage)
+- [Aliased Options](#aliased-options)
+- [Repeatable Options](#repeatable-options)
+- [Errors](#errors)
+- [Commands](#commands)
+- [Arguments Array](#arguments-array)
+- [Help/Usage Text](#helpusage-text)
 
-The default export `argser` function accepts an optional args array and a map of option definitions. It returns a map of values parsed from the args array.
+## Basic Usage
+
+The default export `argser` function accepts an optional arguments array and a map of option definitions. It returns a map of values parsed from the arguments array.
 
 ```ts
 import argser from 'argser';
 
-const args = ['--flag', '--string=foo', '--integer', '123', '--example=1', '-e', '2'];
-
-const [options, err] = argser(args, {
-  flag: { value: false },
-  string: { value: true },
-  integer: { value: parseInt },
-  example: { value: parseInt, alias: 'e', many: true },
+const [options, err] = argser(['--flag', '--string=a', '--integer=1'], {
+  flag: false,
+  string: true,
+  integer: parseInt,
 });
 ```
 
-The above `options` value would be...
+The returned `options` options map would be...
 
 ```ts
 {
   _: [],
   flag: true,
-  string: 'foo',
-  integer: 123,
-  example: [1, 2],
+  string: 'a',
+  integer: 1,
 }
 ```
 
-### Option Definition Shorthand
+See the [Errors](#errors) section for an explanation of the returned `err` value.
 
-For options with only a `value` definition, you can shorten the definition to just the value of the `value` definition.
+## Aliased Options
+
+Options can have a single alias using the `alias` definition. The options keys will still be the full name of the option, even if the alias is used in the arguments array.
 
 ```ts
-argser({
-  flag: false, // Same as {} or { value: false }
-  string: true, // Same as { value: true }
-  integer: parseInt, // Same as { value: parseInt }
+argser(process.argv.slice(2), {
+  flag: { value: false, alias: 'f' },
+  string: { value: true, alias: 's' },
+  integer: { value: parseInt, alias: 'i' },
 });
 ```
 
-### Errors
+## Repeatable Options
+
+Options can be repeatable using the `many` definition. A repeatable option value will always be an array. If a repeatable option does not exist in the arguments array, then the option value will be an empty array.
+
+```ts
+argser(process.argv.slice(2), {
+  flag: { value: false, many: true },
+  string: { value: true, many: true },
+  integer: { value: parseInt, many: true },
+});
+```
+
+## Errors
 
 An error will be _returned_ in the following cases.
 
 - An undefined option is encountered.
-- No value is present for an option which expects a value.
+- No value is present for an option which requires a value.
 
 Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and `reason` properties to support custom messaging.
 
 ## Commands
 
-The `argser.command` function accepts an optional args array, and a variable number of command names. If the first arg matches one of the command names, it returns the matched command name, and an args array with the command removed.
+The `argser.command` function accepts an optional arguments array, and a variable number of command names. If the first arg matches one of the command names, it returns the matched command name, and an arguments array with the command removed.
 
 ```ts
-import argser from 'argser';
-
-const args = ['foo', '--help'];
-
-const [command, commandArgs] = argser.command(args, 'foo');
+const [command, commandArgs] = argser.command(['foo', '--help'], 'foo');
 ```
 
 The above `command` value would be `"foo"`, and the `commandArgs` value would be `["--help"]`.
 
-If no command is matched, `command` will be `undefined`, and `commandArgs` will include all of the original args.
+If no command is matched, then `command` would be `undefined`, and `commandArgs` would include _all_ of the original arguments.
 
-## Process Arguments
+## Arguments Array
 
-When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two non-argument values.
+When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two _non-argument_ values.
 
 ```ts
-argser(process.argv.slice(2), {
-  ...
-});
-
+argser(process.argv.slice(2), { ... });
 argser.command(process.argv.slice(2), ...);
 ```
 
 Alternatively, omit the arguments array, in which case the default arguments array is `process.argv.slice(2)`.
 
 ```ts
-argser({
-  ...
-});
-
+argser({ ... });
 argser.command(...);
 ```
 
