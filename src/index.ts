@@ -60,11 +60,7 @@ export default function argser<TDefs extends Definitions>(
 
   let arg: string | undefined;
 
-  while (null != (arg = args.shift())) {
-    if (arg === '--') {
-      break;
-    }
-
+  while (null != (arg = args.shift()) && arg !== '--') {
     const match = arg.match(/^-+(.+?)(?:=(.*))?$/)?.slice(1) as null | [string, string?];
 
     if (!match) {
@@ -83,7 +79,7 @@ export default function argser<TDefs extends Definitions>(
     let value: unknown;
 
     if (parser) {
-      const string = match[1] ?? args.shift();
+      const string = match[1] ?? (args[0] !== '--' ? args.shift() : undefined);
 
       if (string == null) {
         options._.push(arg, ...args);

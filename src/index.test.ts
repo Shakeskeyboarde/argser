@@ -136,6 +136,25 @@ describe('argser', () => {
     `);
   });
 
+  it('should not consume a -- as a value', () => {
+    expect(
+      argser(['-a', '--'], {
+        a: true,
+      }),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "_": Array [
+            "-a",
+            "--",
+          ],
+          "a": undefined,
+        },
+        [Error: Argument "-a" requires a value.],
+      ]
+    `);
+  });
+
   it('should treat an empty option definition ({}) as a flag', () => {
     expect(
       argser(['-a=1', '-b', '2'], {
