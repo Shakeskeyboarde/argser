@@ -8,7 +8,7 @@ A miniscule arguments parser written in Typescript.
 - [Errors](#errors)
 - [Commands](#commands)
 - [Arguments Array](#arguments-array)
-- [Help/Usage Text](#helpusage-text)
+- [Help Text](#help-text)
 
 ## Basic Usage
 
@@ -98,22 +98,42 @@ argser({ ... });
 argser.command(...);
 ```
 
-## Help/Usage Text
+## Help Text
 
-Generating and printing help and usage text isn't an included feature. I recommend simply writing a `usage.ts` file which exports a default usage string value, and then printing the string as necessary. Most terminals will be at least 80 characters wide, so it's a good idea to manually hard wrap at about that width.
+Generating and printing help text isn't an included feature. I recommend simply writing a `help.ts` file which exports a default string value, and then printing the string as necessary. Most terminals will be at least 80 characters wide, so it's a good idea to manually hard wrap at about that width.
 
-```ts
+```tsx
 export default `
-Usage:  my-cli [options]
-        my-cli --version
-        my-cli --help
+Usage:  my-cli [--help]
 
-My cool CLI that does cool things.
+A description of what this thing does.
 
 Options:
-  -f, --foo <value>   Foos are the best.
-  -b, --bar           Bars are okay too.
-  --version           Print the current version.
-  --help              Print this help text.
+  --help  Print this help text.
 `.trim();
+```
+
+### Help Example
+
+The following example shows how you might implement a help flag, and also handle argument errors, by printing the help text.
+
+```ts
+import argser from 'argser';
+import help from './help';
+
+const [options, err] = argser({
+  help: false,
+});
+
+if (options.help || err) {
+  console.error(help);
+
+  if (err) {
+    console.error();
+    console.error(`${err}`);
+    process.exitCode = 1;
+  }
+} else {
+  // Implementation...
+}
 ```
