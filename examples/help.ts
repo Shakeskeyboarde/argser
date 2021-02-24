@@ -1,5 +1,5 @@
 export default `
-Usage:  ./cli.ts [command] [--foo=<string>] [--bar=<number>]
+Usage:  ./cli.ts [command] [options]
         ./cli.ts --help
 
 An example command line utility.

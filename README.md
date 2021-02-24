@@ -46,7 +46,7 @@ Example outputs from the above script:
 
 ```
 $ ./examples/cli.ts --help
-Usage:  ./cli.ts [command] [--foo=<string>] [--bar=<number>]
+Usage:  ./cli.ts [command] [options]
         ./cli.ts --help
 
 An example command line utility.
