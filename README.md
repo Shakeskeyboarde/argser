@@ -2,150 +2,29 @@
 
 A miniscule arguments parser written in Typescript.
 
-- [Basic Usage](#basic-usage)
+- [Example](#example)
+- [Valued and Unvalued Options](#valued-and-unvalued-options)
 - [Aliased Options](#aliased-options)
 - [Repeatable Options](#repeatable-options)
 - [Arguments Format](#arguments-format)
 - [Errors](#errors)
 - [Commands](#commands)
 - [Process Arguments](#process-arguments)
-- [Help Text](#help-text)
 
-## Basic Usage
+## Example
 
-The default export `argser` function accepts an optional arguments array and a map of option definitions. It returns a map of values parsed from the arguments array.
-
-```ts
-import argser from 'argser';
-
-const [options, err] = argser(['--flag', '--string=a', '--integer=1'], {
-  flag: false,
-  string: true,
-  integer: parseInt,
-});
-```
-
-The returned `options` object would be as follows:
+You can run [./examples/cli.ts](./examples/cli.ts) on Mac or Linux by installing the [ts-node](https://www.npmjs.com/package/ts-node) package globally. On Windows, you will need to use the `ts-node` explicitly, by running `ts-node examples\cli.ts`.
 
 ```ts
-{
-  _: [],
-  flag: true,
-  string: 'a',
-  integer: 1,
-}
-```
+#!/usr/bin/env ts-node-script
+import argser from '../src';
+import help from './help'; // Exports raw help text.
 
-See the [Errors](#errors) section for an explanation of the returned `err` value.
-
-## Aliased Options
-
-Options can have a single alias using the `alias` definition. The options keys will still be the full name of the option, even if the alias is used in the arguments array.
-
-```ts
-argser(process.argv.slice(2), {
-  flag: { value: false, alias: 'f' },
-  string: { value: true, alias: 's' },
-  integer: { value: parseInt, alias: 'i' },
-});
-```
-
-## Repeatable Options
-
-Options can be repeatable using the `many` definition. A repeatable option value will always be an array. If a repeatable option does not exist in the arguments array, then the option value will be an empty array.
-
-```ts
-argser(process.argv.slice(2), {
-  flag: { value: false, many: true },
-  string: { value: true, many: true },
-  integer: { value: parseInt, many: true },
-});
-```
-
-## Arguments Format
-
-Option name arguments can start with any number of hyphens, and option values can be space or equal (`=`) separated. Using single hyphens and space value separation for single character options, is _purely by convention_ and not enforced.
-
-The following argument arrays are all equivalent:
-
-```ts
-['--name=value']
-['--name', 'value']
-['-name=value']
-['-name', 'value']
-['-----name', 'value']
-```
-
-### Double Dash
-
-Argument parsing stops when a double dash (`--`) is encountered. Any arguments after a double dash will be added to the underscore (`_`) key of the options object.
-
-```ts
-['--option', '--', '--underscore', '--values']
-```
-
-## Errors
-
-An error will be _returned_ in the following cases.
-
-- An undefined option is encountered.
-- No value is present for an option which requires a value.
-
-Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and `reason` properties to support custom messaging.
-
-## Commands
-
-The `argser.command` function accepts an optional arguments array, and a variable number of command names. If the first argument matches one of the command names, it returns the matched command name, and an arguments array with the command removed.
-
-```ts
-const [command, commandArgs] = argser.command(['foo', '--help'], 'foo');
-```
-
-The above `command` value would be `"foo"`, and the `commandArgs` value would be `["--help"]`.
-
-If no command is matched, then `command` would be `undefined`, and `commandArgs` would include _all_ of the original arguments.
-
-## Process Arguments
-
-When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), make sure to remove the first two _non-argument_ values.
-
-```ts
-argser(process.argv.slice(2), { ... });
-argser.command(process.argv.slice(2), ...);
-```
-
-Alternatively, omit the arguments array, in which case the default arguments array is `process.argv.slice(2)`.
-
-```ts
-argser({ ... });
-argser.command(...);
-```
-
-## Help Text
-
-Generating and printing help text isn't an included feature. I recommend simply writing a `help.ts` file which exports a default string value, and then printing the string as necessary. Most terminals will be at least 80 characters wide, so it's a good idea to manually hard wrap at about that width.
-
-```tsx
-export default `
-Usage:  my-cli [--help]
-
-A description of what this thing does.
-
-Options:
-  --help  Print this help text.
-`.trim();
-```
-
-### Help Example
-
-The following example shows how you might implement a help flag, and also handle argument errors, by printing the help text.
-
-```ts
-import argser from 'argser';
-import help from './help';
-
-const [options, err] = argser({
-  help: false,
+const [command, commandArgs] = argser.command(process.argv.slice(2), 'zip', 'zap');
+const [options, err] = argser(commandArgs, {
+  help: false, // Equivalent to { value: false }
+  foo: { value: true, alias: 'f' },
+  bar: { value: parseInt, many: true, alias: 'b' },
 });
 
 if (options.help || err) {
@@ -157,6 +36,139 @@ if (options.help || err) {
     process.exitCode = 1;
   }
 } else {
-  // Implementation...
+  console.log('Command:', command);
+  console.log('Options:', options);
 }
+```
+
+Example outputs from the above script:
+
+```bash
+$ ./examples/cli.ts --help
+Usage:  ./cli.ts [command] [--foo=<string>] [--bar=<number>]
+        ./cli.ts --help
+
+An example command line utility.
+
+Options:
+  -f, --foo <string>  A string valued option.
+  -b, --bar <number>  A repeatable number valued option.
+  --help              Display this help message.
+
+Commands:
+  zip   An example command.
+  zap   A second example command.
+
+$ ./examples/cli.ts
+Command: undefined
+Options: { help: false, foo: undefined, bar: [], _: [] }
+
+$ ./examples/cli.ts zip --foo "As easy as..." -b 1 -b 2 boop
+Command: zip
+Options: { help: false, foo: 'As easy as...', bar: [ 1, 2 ], _: [ 'boop' ] }
+```
+
+## Valued and Unvalued Options
+
+An option can be valued or unvalued depending on the `value` definition.
+
+If the `value` definition is `true`, then the captured string is used as the option value as-is. The value can be transformed if the `value` definition is a function. The raw string value will be passed to the function, and its return value will be used as the final option value.
+
+If the `value` definition is `false`, then the option is a "flag" and its value will be `true` if the option is present, or `false` if the option is not present.
+
+```ts
+argser({
+  help: { value: false }, // Unvalued (boolean)
+  message: { value: true }, // Valued (string | undefined)
+  parsed: { value: parseInt }, // Valued (number | undefined)
+})
+```
+
+If the option definition object only includes a `value` key, then the definition can be shortened to just the value of the `value` key.
+
+```ts
+argser({
+  help: false, // Unvalued (boolean)
+  message: true, // Valued (string | undefined)
+  parsed: parseInt, // Valued (number | undefined)
+})
+```
+
+## Aliased Options
+
+An option can have a single alias using the `alias` definition. The option key will still be the name of the option, even if the alias is used in the arguments array.
+
+```ts
+argser({
+  name: { alias: 'n' },
+});
+```
+
+## Repeatable Options
+
+An option can be repeatable using the `many` definition. A repeatable option value will always be an array. If a repeatable option does not exist in the arguments array, then the option value will be an empty array.
+
+```ts
+argser({
+  name: { many: true },
+});
+```
+
+## Arguments Format
+
+Option arguments can start with any number of hyphens, and values can be equal (`=`) separated as part of the same argument, or the next argument. Using single hyphens and a separate value argument for single character options, is _purely by convention_ and not enforced.
+
+The following argument arrays are all equivalent:
+
+```
+['--name=value']
+['--name', 'value']
+['-name=value']
+['-name', 'value']
+['-----name', 'value']
+```
+
+### Double Dash
+
+Argument parsing stops when a double dash (`--`) is encountered. Any arguments after a double dash will be added to the underscore (`_`) key of the options object.
+
+```
+['--option', '--', '--underscore', '--values'];
+```
+
+## Errors
+
+An error will be _returned_ in the following cases.
+
+- An unknown option is encountered.
+- No value is present for an option which requires a value.
+
+Errors are returned instead of thrown to allow the partially parsed options object to be returned with the error, and to remove the necessity of a try/catch block. Parsing stops when an error occurs, and any remaining arguments (including the error argument) will be added to the options underscore (`_`) array. The returned error will have `arg` and `reason` properties to support custom messaging.
+
+## Commands
+
+The `argser.command` utility function returns a two value tuple: `[command, commandArgs]`. If the first argument looks like a command, then the `command` value will be that first argument, and `commandArgs` will be the arguments array with the first command argument removed. If the first argument does not look like a command, then the `command` value will be undefined, and `commandArgs` will be all of the original arguments.
+
+```ts
+// Accepts any value that doesn't start with a hyphen as a command.
+const [command, commandArgs] = argser.command(process.argv.slice(2));
+
+// Only accepts one of the given values (zip or zap) as a command.
+const [command, commandArgs] = argser.command(process.argv.slice(2), 'zip', 'zap');
+```
+
+## Process Arguments
+
+When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), _make sure to remove the first two non-argument values_. These arguments are the node executable and the running script.
+
+```ts
+argser(process.argv.slice(2), { ... });
+argser.command(process.argv.slice(2), ...);
+```
+
+Alternatively, omit the arguments array, in which case the default arguments array is `process.argv.slice(2)`.
+
+```ts
+argser({ ... });
+argser.command(...);
 ```

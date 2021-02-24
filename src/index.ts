@@ -39,7 +39,8 @@ export default function argser<TDefs extends Definitions>(
   ...params: [TDefs] | [string[], TDefs]
 ): [Record<string, any>, Error | null] {
   const [args, definitions] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
-  const options: Record<string, any> = { _: [] };
+  const _: string[] = [];
+  const options: Record<string, any> = {};
   const names = new Map<string, string>();
   const parsers = new Map<string, (value: string) => unknown>();
   const arrays = new Set<string>();
@@ -64,14 +65,14 @@ export default function argser<TDefs extends Definitions>(
     const match = arg.match(/^-+(.+?)(?:=(.*))?$/)?.slice(1) as null | [string, string?];
 
     if (!match) {
-      options._.push(arg);
+      _.push(arg);
       continue;
     }
 
     const name = names.get(match[0]);
 
     if (name == null) {
-      options._.push(arg, ...args);
+      _.push(arg, ...args);
       return [options, new ArgserError(arg, 'unknown')];
     }
 
@@ -82,7 +83,7 @@ export default function argser<TDefs extends Definitions>(
       const string = match[1] ?? (args[0] !== '--' ? args.shift() : undefined);
 
       if (string == null) {
-        options._.push(arg, ...args);
+        _.push(arg, ...args);
         return [options, new ArgserError(arg, 'incomplete')];
       }
 
@@ -98,11 +99,14 @@ export default function argser<TDefs extends Definitions>(
     }
   }
 
-  options._.push(...args);
+  _.push(...args);
+  options._ = _;
 
   return [options, null];
 }
 
+function command(): [string | undefined, string[]];
+function command(args: string[]): [string | undefined, string[]];
 function command<TCommand extends string>(...commands: TCommand[]): [TCommand | undefined, string[]];
 function command<TCommand extends string>(args: string[], ...commands: TCommand[]): [TCommand | undefined, string[]];
 function command<TCommand extends string>(
@@ -116,4 +120,5 @@ function command<TCommand extends string>(
 }
 
 argser.command = command;
+
 export { command };
