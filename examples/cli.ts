@@ -11,9 +11,9 @@ const [options, err] = argser(commandArgs, {
 
 if (options.help || err) {
   console.error(help);
-  console.error();
 
   if (err) {
+    console.error();
     console.error(`${err}`);
     process.exitCode = 1;
   }
