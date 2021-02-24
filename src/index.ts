@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { ArgserError } from './ArgserError';
 
 export type Definition =
@@ -9,7 +7,7 @@ export type Definition =
 
 export type Definitions = Record<string, Definition>;
 
-export type InferOptions<TDefs extends Definitions> = TDefs extends Definitions
+export type InferArgserOptions<TDefs extends Definitions> = TDefs extends Definitions
   ? {
       _: string[];
     } & {
@@ -31,16 +29,19 @@ export type InferOptions<TDefs extends Definitions> = TDefs extends Definitions
     }
   : never;
 
-export type Result<TDefs extends Definitions> = [InferOptions<TDefs>, Error | null];
+export type ArgserResult<TDefs extends Definitions> = [InferArgserOptions<TDefs>, Error | null];
 
-export default function argser<TDefs extends Definitions>(definitions: TDefs): Result<TDefs>;
-export default function argser<TDefs extends Definitions>(args: string[], definitions: TDefs): Result<TDefs>;
-export default function argser<TDefs extends Definitions>(
-  ...params: [TDefs] | [string[], TDefs]
-): [Record<string, any>, Error | null] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type _ArgserOptions = Record<string, any>;
+type _ArgserResult = [_ArgserOptions, Error | null];
+type _ArgserParams<TDefs extends Definitions> = [TDefs] | [string[], TDefs];
+
+export default function argser<TDefs extends Definitions>(definitions: TDefs): ArgserResult<TDefs>;
+export default function argser<TDefs extends Definitions>(args: string[], definitions: TDefs): ArgserResult<TDefs>;
+export default function argser<TDefs extends Definitions>(...params: _ArgserParams<TDefs>): _ArgserResult {
   const [args, definitions] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
   const _: string[] = [];
-  const options: Record<string, any> = {};
+  const options: _ArgserOptions = {};
   const names = new Map<string, string>();
   const parsers = new Map<string, (value: string) => unknown>();
   const arrays = new Set<string>();
@@ -72,8 +73,7 @@ export default function argser<TDefs extends Definitions>(
     const name = names.get(match[0]);
 
     if (name == null) {
-      _.push(arg, ...args);
-      return [options, new ArgserError(arg, 'unknown')];
+      return [{ ...options, _: [..._, arg, ...args] }, new ArgserError(arg, 'unknown')];
     }
 
     const parser = parsers.get(name);
@@ -83,8 +83,7 @@ export default function argser<TDefs extends Definitions>(
       const string = match[1] ?? (args[0] !== '--' ? args.shift() : undefined);
 
       if (string == null) {
-        _.push(arg, ...args);
-        return [options, new ArgserError(arg, 'incomplete')];
+        return [{ ...options, _: [..._, arg, ...args] }, new ArgserError(arg, 'incomplete')];
       }
 
       value = parser(string);
@@ -99,22 +98,19 @@ export default function argser<TDefs extends Definitions>(
     }
   }
 
-  _.push(...args);
-  options._ = _;
-
-  return [options, null];
+  return [{ ...options, _: [..._, ...args] }, null];
 }
 
-function command(): [string | undefined, string[]];
-function command(args: string[]): [string | undefined, string[]];
-function command<TCommand extends string>(...commands: TCommand[]): [TCommand | undefined, string[]];
-function command<TCommand extends string>(args: string[], ...commands: TCommand[]): [TCommand | undefined, string[]];
-function command<TCommand extends string>(
-  ...params: [string[], ...string[]] | string[]
-): [TCommand | undefined, string[]] {
-  const [args, commands] = (params[0] instanceof Array
-    ? [params[0].slice(), params.slice(1)]
-    : [process.argv.slice(2), params]) as [string[], string[]];
+type _CommandResult<TCommand extends string = string> = [TCommand | undefined, string[]];
+type _CommandParams = [string[], ...string[]] | string[];
+
+function command(): _CommandResult;
+function command(args: string[]): _CommandResult;
+function command<TCommand extends string>(...commands: TCommand[]): _CommandResult<TCommand>;
+function command<TCommand extends string>(args: string[], ...commands: TCommand[]): _CommandResult<TCommand>;
+function command<TCommand extends string>(...params: _CommandParams): _CommandResult<TCommand> {
+  const [args, ...commands] =
+    params[0] instanceof Array ? (params as [string[], ...string[]]) : [process.argv.slice(2), ...(params as string[])];
 
   return commands.indexOf(args[0]) >= 0 ? [args[0] as TCommand, args.slice(1)] : [undefined, args];
 }
