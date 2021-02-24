@@ -59,11 +59,15 @@ Options:
 Commands:
   zip   An example command.
   zap   A second example command.
+```
 
+```
 $ ./examples/cli.ts
 Command: undefined
 Options: { help: false, foo: undefined, bar: [], _: [] }
+```
 
+```
 $ ./examples/cli.ts zip --foo=beep -b 1 -b 2 boop
 Command: zip
 Options: { help: false, foo: 'beep', bar: [ 1, 2 ], _: [ 'boop' ] }
