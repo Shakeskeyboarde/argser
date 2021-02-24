@@ -20,7 +20,8 @@ You can run [./examples/cli.ts](./examples/cli.ts) on Mac or Linux by installing
 import argser from '../src';
 import help from './help'; // Exports raw help text.
 
-const [command, commandArgs] = argser.command(process.argv.slice(2), 'zip', 'zap');
+const args = process.argv.slice(2);
+const [command, commandArgs] = argser.command(args, 'zip', 'zap');
 const [options, err] = argser(commandArgs, {
   help: false, // Equivalent to { value: false }
   foo: { value: true, alias: 'f' },
@@ -63,9 +64,9 @@ $ ./examples/cli.ts
 Command: undefined
 Options: { help: false, foo: undefined, bar: [], _: [] }
 
-$ ./examples/cli.ts zip --foo "As easy as..." -b 1 -b 2 boop
+$ ./examples/cli.ts zip --foo=beep -b 1 -b 2 boop
 Command: zip
-Options: { help: false, foo: 'As easy as...', bar: [ 1, 2 ], _: [ 'boop' ] }
+Options: { help: false, foo: 'beep', bar: [ 1, 2 ], _: [ 'boop' ] }
 ```
 
 ## Valued and Unvalued Options

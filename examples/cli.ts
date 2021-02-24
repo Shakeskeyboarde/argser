@@ -2,7 +2,8 @@
 import argser from '../src';
 import help from './help'; // Exports raw help text.
 
-const [command, commandArgs] = argser.command(process.argv.slice(2), 'zip', 'zap');
+const args = process.argv.slice(2);
+const [command, commandArgs] = argser.command(args, 'zip', 'zap');
 const [options, err] = argser(commandArgs, {
   help: false, // Equivalent to { value: false }
   foo: { value: true, alias: 'f' },
