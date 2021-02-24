@@ -147,7 +147,11 @@ Errors are returned instead of thrown to allow the partially parsed options obje
 
 ## Commands
 
-The `argser.command` utility function returns a two value tuple: `[command, commandArgs]`. If the first argument looks like a command, then the `command` value will be that first argument, and `commandArgs` will be the arguments array with the first command argument removed. If the first argument does not look like a command, then the `command` value will be undefined, and `commandArgs` will be all of the original arguments.
+The `argser.command` utility function extracts a command argument, returning a two value tuple: `[command, commandArgs]`.
+
+If the first argument looks like a command, then the `command` value will be that first argument, and `commandArgs` will be the arguments array with the first command argument removed.
+
+If the first argument does not look like a command, then the `command` value will be undefined, and `commandArgs` will be all of the original arguments.
 
 ```ts
 // Accepts any value that doesn't start with a hyphen as a command.
