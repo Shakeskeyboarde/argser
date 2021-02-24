@@ -99,7 +99,7 @@ argser({
 })
 ```
 
-For valued options, the value can be part of the option with an equal character separator (eg. `--message=foo`), or the value can be the next argument (eg. `--message foo`).
+For valued options, the value can be part of a single option argument with an equal character separator (eg. `--message=foo`), or the value can be the next argument (eg. `--message foo`).
 
 ## Aliased Options
 
