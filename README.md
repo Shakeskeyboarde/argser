@@ -99,6 +99,8 @@ argser({
 })
 ```
 
+For valued options, the value can be part of the option with an equal character separator (eg. `--message=foo`), or the value can be the next argument (eg. `--message foo`).
+
 ## Aliased Options
 
 An option can have a single alias using the `alias` definition. The option key will still be the name of the option, even if the alias is used in the arguments array.
