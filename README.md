@@ -116,7 +116,7 @@ argser({
 
 ## Arguments Format
 
-Option arguments can start with any number of hyphens, and values can be equal (`=`) separated as part of the same argument, or the next argument. Using single hyphens and a separate value argument for single character options, is _purely by convention_ and not enforced.
+Option arguments can start with any number of hyphens, and values can be equal (`=`) separated as part of the same argument, or the next argument. For a single character option, using a single hyphen and a second argument for the value, _is purely a convention_.
 
 The following argument arrays are all equivalent:
 
