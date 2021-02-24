@@ -39,7 +39,10 @@ type _ArgserParams<TDefs extends Definitions> = [TDefs] | [string[], TDefs];
 export default function argser<TDefs extends Definitions>(definitions: TDefs): ArgserResult<TDefs>;
 export default function argser<TDefs extends Definitions>(args: string[], definitions: TDefs): ArgserResult<TDefs>;
 export default function argser<TDefs extends Definitions>(...params: _ArgserParams<TDefs>): _ArgserResult {
-  const [args, definitions] = params.length === 1 ? [process.argv.slice(2), params[0]] : [params[0].slice(), params[1]];
+  const [args, definitions] =
+    params.length === 1
+      ? [process.argv.slice(2), params[0]]
+      : ([params[0].slice(), params[1]] as [(string | undefined)[], TDefs]);
   const _: string[] = [];
   const options: _ArgserOptions = {};
   const names = new Map<string, string>();
@@ -60,17 +63,40 @@ export default function argser<TDefs extends Definitions>(...params: _ArgserPara
     if (many) arrays.add(name);
   });
 
-  let arg: string | undefined;
+  while (args.length) {
+    const arg = args.shift();
 
-  while (null != (arg = args.shift()) && arg !== '--') {
-    const match = arg.match(/^-+(.+?)(?:=(.*))?$/)?.slice(1) as null | [string, string?];
+    if (arg == null) {
+      continue;
+    } else if (arg === '--') {
+      break;
+    }
+
+    const match = arg.match(/^(-{1,2})(.+?)(?:=(.*))?$/)?.slice(1) as null | [string, string, string?];
 
     if (!match) {
       _.push(arg);
       continue;
     }
 
-    const name = names.get(match[0]);
+    const [matchDashes, matchName, matchValue] = match;
+
+    // Split single hyphen, multi-character options into individual
+    // single character arguments, with the value (if there is one)
+    // attached to the last option.
+    if (matchDashes === '-' && matchName.length > 1) {
+      const last = matchName.length - 1;
+
+      args.unshift(
+        ...matchName.split('').reduce<(string | undefined)[]>((acc, char, i) => {
+          return [...acc, `-${char}`, ...(i < last ? [undefined] : matchValue != null ? [matchValue] : [])];
+        }, []),
+      );
+
+      continue;
+    }
+
+    const name = names.get(matchName);
 
     if (name == null) {
       return [{ ...options, _: [..._, arg, ...args] }, new ArgserError(arg, 'unknown')];
@@ -80,13 +106,13 @@ export default function argser<TDefs extends Definitions>(...params: _ArgserPara
     let value: unknown;
 
     if (parser) {
-      const string = match[1] ?? (args[0] !== '--' ? args.shift() : undefined);
+      const rawValue = matchValue ?? (args[0] !== '--' ? args.shift() : undefined);
 
-      if (string == null) {
+      if (rawValue == null) {
         return [{ ...options, _: [..._, arg, ...args] }, new ArgserError(arg, 'incomplete')];
       }
 
-      value = parser(string);
+      value = parser(rawValue);
     } else {
       value = true;
     }
@@ -112,7 +138,9 @@ function command<TCommand extends string>(...params: _CommandParams): _CommandRe
   const [args, ...commands] =
     params[0] instanceof Array ? (params as [string[], ...string[]]) : [process.argv.slice(2), ...(params as string[])];
 
-  return commands.indexOf(args[0]) >= 0 ? [args[0] as TCommand, args.slice(1)] : [undefined, args];
+  return (commands.length === 0 && args[0]?.[0] !== '-') || commands.indexOf(args[0]) >= 0
+    ? [args[0] as TCommand, args.slice(1)]
+    : [undefined, args];
 }
 
 argser.command = command;

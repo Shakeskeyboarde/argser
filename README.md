@@ -6,10 +6,10 @@ A miniscule arguments parser written in Typescript.
 - [Valued and Unvalued Options](#valued-and-unvalued-options)
 - [Aliased Options](#aliased-options)
 - [Repeatable Options](#repeatable-options)
-- [Arguments Format](#arguments-format)
+- [Dashes](#dashes)
 - [Errors](#errors)
 - [Commands](#commands)
-- [Process Arguments](#process-arguments)
+- [Arguments](#arguments)
 
 ## Example
 
@@ -119,23 +119,27 @@ argser({
 });
 ```
 
-## Arguments Format
+## Dashes
 
-Option arguments can start with any number of hyphens, and values can be equal (`=`) separated as part of the same argument, or the next argument. For a single character option, using a single hyphen and a second argument for the value, _is purely a convention_.
+Multi-character options _must_ start with two dashes (eg. `--name`). If an argument is a single dash followed by multiple characters (eg. `-abc`), it will be interpreted as _multiple single character options._ Common examples of this behavior are the `git -fdx` and `ls -al` commands.
 
-The following argument arrays are all equivalent:
+The following argument arrays are equivalent, containing _three_ single character flags.
 
 ```
-['--name=value']
-['--name', 'value']
-['-name=value']
-['-name', 'value']
-['-----name', 'value']
+['-abc']
+['-a', '-b', '-c']
 ```
 
-### Double Dash
+For single dash arguments, _only the last option can require a value._ If any of the single character options before the last one require a value, an error will be returned. In the following example, the valued "c" option gets the value "foo", and the "a" and "b" options must be unvalued (flags).
 
-Argument parsing stops when a double dash (`--`) is encountered. Any arguments after a double dash will be added to the underscore (`_`) key of the options object.
+```
+['-abc=foo']
+['-abc', 'foo']
+```
+
+### Double Dash Argument
+
+Argument parsing stops when a double dash (`--`) argument is encountered. Any arguments after a double dash will be added to the underscore (`_`) key of the options object.
 
 ```
 ['--option', '--', '--underscore', '--values'];
@@ -159,14 +163,14 @@ If the first argument looks like a command, then the `command` value will be tha
 If the first argument does not look like a command, then the `command` value will be undefined, and `commandArgs` will be all of the original arguments.
 
 ```ts
-// Accept any first argument that doesn't start with a hyphen.
+// Accept any first argument that doesn't start with a dash.
 const [command, commandArgs] = argser.command();
 
 // Only accepts one of the given values (zip or zap).
 const [command, commandArgs] = argser.command('zip', 'zap');
 ```
 
-## Process Arguments
+## Arguments
 
 When passing in [process.argv](https://nodejs.org/docs/latest/api/process.html#process_process_argv), _make sure to remove the first two non-argument values_. These arguments are the node executable and the running script.
 

@@ -110,7 +110,7 @@ describe('argser', () => {
           "a": undefined,
           "b": undefined,
         },
-        [Error: Argument "-c" is unknown.],
+        [Error: Option "-c" is unknown.],
       ]
     `);
   });
@@ -150,7 +150,7 @@ describe('argser', () => {
           ],
           "a": undefined,
         },
-        [Error: Argument "-a" requires a value.],
+        [Error: Option "-a" requires a value.],
       ]
     `);
   });
@@ -209,7 +209,87 @@ describe('argser', () => {
           ],
           "a": undefined,
         },
-        [Error: Argument "-a" requires a value.],
+        [Error: Option "-a" requires a value.],
+      ]
+    `);
+  });
+
+  it('should treat a single hyphen, multi-character argument as multiple single character options', () => {
+    expect(
+      argser(['-abc'], {
+        a: false,
+        b: false,
+        c: false,
+      }),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "_": Array [],
+          "a": true,
+          "b": true,
+          "c": true,
+        },
+        null,
+      ]
+    `);
+
+    expect(
+      argser(['-ab', 'foo', '-cd=bar', '-e'], {
+        a: false,
+        b: true,
+        c: false,
+        d: true,
+        e: false,
+      }),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "_": Array [],
+          "a": true,
+          "b": "foo",
+          "c": true,
+          "d": "bar",
+          "e": true,
+        },
+        null,
+      ]
+    `);
+
+    expect(
+      argser(['-ab', 'foo'], {
+        a: true,
+        b: true,
+      }),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "_": Array [
+            "-a",
+            "-b",
+            "foo",
+          ],
+          "a": undefined,
+          "b": undefined,
+        },
+        [Error: Option "-a" requires a value.],
+      ]
+    `);
+
+    expect(
+      argser(['-ab'], {
+        a: false,
+        b: true,
+      }),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "_": Array [
+            "-b",
+          ],
+          "a": true,
+          "b": undefined,
+        },
+        [Error: Option "-b" requires a value.],
       ]
     `);
   });
@@ -217,38 +297,53 @@ describe('argser', () => {
 
 describe('argser.command', () => {
   it('should return the first matching command', () => {
-    expect(argser.command(['b', 'c', '--arg'], 'a', 'b')).toMatchInlineSnapshot(`
+    expect(argser.command(['a', 'b'], 'b', 'a')).toMatchInlineSnapshot(`
       Array [
-        "b",
+        "a",
         Array [
-          "c",
-          "--arg",
+          "b",
         ],
       ]
     `);
   });
 
-  it('should use process.argv.slice(2) when no arguments array is given', () => {
-    process.argv = [...process.argv.slice(0, 2), 'b', 'c', '--arg'];
-    expect(argser.command('a', 'b')).toMatchInlineSnapshot(`
+  it('should return the first matching command from process.argv.slice(2) when no arguments array is given', () => {
+    process.argv = [...process.argv.slice(0, 2), 'a', 'b'];
+    expect(argser.command('b', 'a')).toMatchInlineSnapshot(`
       Array [
-        "b",
+        "a",
         Array [
-          "c",
-          "--arg",
+          "b",
         ],
       ]
     `);
   });
 
   it('should return undefined if no command is matched', () => {
-    expect(argser.command(['b', 'c', '--arg'], 'a')).toMatchInlineSnapshot(`
+    expect(argser.command(['a', 'b'], 'c', 'b')).toMatchInlineSnapshot(`
       Array [
         undefined,
         Array [
+          "a",
           "b",
-          "c",
-          "--arg",
+        ],
+      ]
+    `);
+  });
+
+  it('should match any argument without a dash prefix if no list of commands is given', () => {
+    expect(argser.command(['a'])).toMatchInlineSnapshot(`
+      Array [
+        "a",
+        Array [],
+      ]
+    `);
+
+    expect(argser.command(['-a'])).toMatchInlineSnapshot(`
+      Array [
+        undefined,
+        Array [
+          "-a",
         ],
       ]
     `);
