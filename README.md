@@ -43,7 +43,7 @@ if (options.help || err) {
 
 Example outputs from the above script:
 
-```bash
+```
 $ ./examples/cli.ts --help
 Usage:  ./cli.ts [command] [--foo=<string>] [--bar=<number>]
         ./cli.ts --help
