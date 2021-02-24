@@ -155,11 +155,11 @@ If the first argument looks like a command, then the `command` value will be tha
 If the first argument does not look like a command, then the `command` value will be undefined, and `commandArgs` will be all of the original arguments.
 
 ```ts
-// Accepts any value that doesn't start with a hyphen as a command.
-const [command, commandArgs] = argser.command(process.argv.slice(2));
+// Accept any first argument that doesn't start with a hyphen.
+const [command, commandArgs] = argser.command();
 
-// Only accepts one of the given values (zip or zap) as a command.
-const [command, commandArgs] = argser.command(process.argv.slice(2), 'zip', 'zap');
+// Only accepts one of the given values (zip or zap).
+const [command, commandArgs] = argser.command('zip', 'zap');
 ```
 
 ## Process Arguments
