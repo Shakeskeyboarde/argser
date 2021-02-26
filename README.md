@@ -13,11 +13,9 @@ A miniscule arguments parser written in Typescript.
 
 ## Example
 
-You can run [./examples/cli.ts](./examples/cli.ts) on Mac or Linux by installing the [ts-node](https://www.npmjs.com/package/ts-node) package globally. On Windows, you will need to use the `ts-node` explicitly, by running `ts-node examples\cli.ts`.
-
 ```ts
 #!/usr/bin/env ts-node-script
-import argser from '../src';
+import argser from 'argser';
 import help from './help'; // Exports raw help text.
 
 const args = process.argv.slice(2);
@@ -45,7 +43,7 @@ if (options.help || err) {
 Example outputs from the above script:
 
 ```
-$ ./examples/cli.ts --help
+$ ./cli.ts --help
 Usage:  ./cli.ts [command] [options]
         ./cli.ts --help
 
@@ -62,16 +60,18 @@ Commands:
 ```
 
 ```
-$ ./examples/cli.ts
+$ ./cli.ts
 Command: undefined
 Options: { help: false, foo: undefined, bar: [], _: [] }
 ```
 
 ```
-$ ./examples/cli.ts zip --foo=beep -b 1 -b 2 boop
+$ ./cli.ts zip --foo=beep -b 1 -b 2 boop
 Command: zip
 Options: { help: false, foo: 'beep', bar: [ 1, 2 ], _: [ 'boop' ] }
 ```
+
+A runnable version of this example is [included](./examples/cli.ts). You will need to install the [ts-node](https://www.npmjs.com/package/ts-node) package globally to run it. On Mac or Linux you can just invoke the `./examples/cli.ts` script. On Windows, you will need to use the `ts-node examples\cli.ts` command.
 
 ## Valued and Unvalued Options
 
