@@ -29,6 +29,9 @@
     "build": "del-cli lib && tsc --noEmit false --emitDeclarationOnly && babel src --out-dir lib --extensions .ts,.tsx",
     "prepack": "npm test && npm run build"
   },
+  "engines": {
+    "node": ">= 12"
+  },
   "config": {},
   "browserslist": [
     "node >= 12"
@@ -52,6 +55,7 @@
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
     "babel-jest": "^26.6.3",
+    "babel-plugin-const-enum": "^1.0.1",
     "cross-env": "^7.0.3",
     "del-cli": "^3.0.1",
     "eslint": "^7.20.0",
